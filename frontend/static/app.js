@@ -67,10 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /* ═══════ SLIDER VALUES ═══════ */
-    const sevSlider = document.getElementById('severity');
-    const denSlider = document.getElementById('trafficDensity');
-    if (sevSlider) sevSlider.addEventListener('input', e => document.getElementById('severityVal').textContent = e.target.value);
-    if (denSlider) denSlider.addEventListener('input', e => document.getElementById('densityVal').textContent = (e.target.value/10).toFixed(1));
+    // (Severity is now a radio button group, Time Sensitive is a checkbox)
 
     /* ═══════ INIT ═══════ */
     async function init() {
@@ -204,8 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     requestCategory: document.getElementById('requestCategory').value,
                     currentLocation: originSelect.value,
                     destination:     destSelect.value,
-                    severity:        document.getElementById('severity').value,
-                    trafficDensity:  document.getElementById('trafficDensity').value
+                    severity:        document.querySelector('input[name="severity"]:checked').value,
+                    timeSensitive:   document.getElementById('timeSensitive').checked
                 })
             });
             const data = await res.json();

@@ -20,7 +20,6 @@ def buildDemoRequests():
         "destination":      "Industrial_Zone",
         "severity":         "low",
         "time_sensitive":   False,
-        "passenger_count":  2,
         "notes":            "Standard commute route."
     }
 
@@ -35,7 +34,6 @@ def buildDemoRequests():
         "destination":      "City_Hospital",
         "severity":         "critical",
         "time_sensitive":   True,
-        "passenger_count":  3,
         "notes":            "Cardiac arrest patient on board. Requesting emergency corridor."
     }
 
@@ -50,7 +48,6 @@ def buildDemoRequests():
         "destination":      "Traffic_Control_Center",
         "severity":         "low",
         "time_sensitive":   False,
-        "passenger_count":  1,
         "notes":            "Daily signal reallocation cycle."
     }
 
@@ -66,11 +63,22 @@ def buildDemoRequests():
         "destination":      "South_Residential",
         "severity":         "high",
         "time_sensitive":   True,
-        "passenger_count":  5,
         "notes":            "Structure fire reported. Full city coordination required."
     }
 
-    return [requestA, requestB, requestC, requestD]
+    requestE = {
+        "request_id":       "REQ-005",
+        "vehicle_type":     "police_car",
+        "request_category": "Policy_Check",
+        "current_location": "Police_HQ",
+        "destination":      "City_Hospital",
+        "severity":         "high",
+        "time_sensitive":   True,
+        "notes":            "Escort authorization verification for VIP transport."
+    }
+
+    return [requestA, requestB, requestC, requestD, requestE]
+
 
 def processRequest(rawRequest):
     requestId = rawRequest.get("request_id", "UNKNOWN")
@@ -109,7 +117,7 @@ def main():
     print("  SMART CITY TRAFFIC & EMERGENCY RESPONSE AI SYSTEM")
     print("=" * 60)
     print("\nInitializing city graph data and mock requests...")
-    print("4 demonstration requests queued for processing.\n")
+    print("5 demonstration requests queued for processing.\n")
 
     demoRequests = buildDemoRequests()
 

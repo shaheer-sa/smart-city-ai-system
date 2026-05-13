@@ -111,13 +111,18 @@
                             <select id="destination"></select>
                         </div>
                     </div>
-                    <div class="ctrl-slider">
-                        <label>Severity <span class="neon-val" id="severityVal">5</span></label>
-                        <input type="range" id="severity" min="1" max="10" value="5">
+                    <div class="ctrl-field" style="margin-bottom: 12px;">
+                        <label style="margin-bottom: 8px; display: block;">Severity Level</label>
+                        <div class="radio-group" style="display: flex; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+                            <label style="font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="severity" value="low" checked style="accent-color: #b5c44e;"> Low</label>
+                            <label style="font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="severity" value="medium" style="accent-color: #b5c44e;"> Med</label>
+                            <label style="font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="severity" value="high" style="accent-color: #b5c44e;"> High</label>
+                            <label style="font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="severity" value="critical" style="accent-color: #b5c44e;"> Crit</label>
+                        </div>
                     </div>
-                    <div class="ctrl-slider">
-                        <label>Traffic Density <span class="neon-val" id="densityVal">0.5</span></label>
-                        <input type="range" id="trafficDensity" min="0" max="10" value="5">
+                    <div class="ctrl-slider" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between;">
+                        <label for="timeSensitive" style="margin: 0; padding: 10px 0;">Time Sensitive</label>
+                        <input type="checkbox" id="timeSensitive" style="width: 20px; height: 20px; accent-color: #b5c44e;">
                     </div>
                     <button type="submit" id="submit-btn" disabled>
                         <span class="btn-text">ENGAGE SYSTEM</span>

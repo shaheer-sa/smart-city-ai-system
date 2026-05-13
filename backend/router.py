@@ -10,8 +10,7 @@ def requestRouter(request):
     endNode      = request.get("destination", "")
     featureVector= request.get("feature_vector", [0.2, 0.25, 0.0, 0.1])
 
-    # Initialize a results container , every field defaults to None/False
-    # so generateFinalResponse can check what actually ran.
+    # Initialize defaults
     results = {
         "request_id":              request.get("request_id", "N/A"),
         "request_category":        category,
@@ -19,7 +18,7 @@ def requestRouter(request):
         "origin":                  startNode,
         "destination":             endNode,
 
-        # Module outputs , populated below depending on category
+        # Module outputs
         "ann_priority":            None,
         "ann_confidence":          None,
         "kb_result":               None,
@@ -33,9 +32,7 @@ def requestRouter(request):
         "error":                   None
     }
 
-    # BRANCH 1 , Route Request
-    # A standard navigation request. Civilians get BFS hopoptimal,
-    # while emergency vehicles get A* costoptimal with heuristic.
+    # Branch 1: Route
     if category == "Route_Request":
         results["modules_invoked"].append("searchNavigation")
 
@@ -45,7 +42,7 @@ def requestRouter(request):
             algorithm = "BFS"
             path, cost = findRoute("BFS", unweightedGraph, startNode, endNode)
         else:
-            # Emergency vehicles use A* on the weighted graph for fastest route
+            # A* for emergency
             algorithm = "ASTAR"
             path, cost = findRoute("ASTAR", weightedGraph, startNode, endNode,
                                    heuristicFn=getHeuristic)
@@ -54,33 +51,29 @@ def requestRouter(request):
         results["route_path"]      = path
         results["route_cost"]      = cost
 
-    # BRANCH 2 , Policy Check
-    # Only the Knowledge Base is needed. No navigation is requested.
+    # Branch 2: Policy
     elif category == "Policy_Check":
         results["modules_invoked"].append("knowledgeBase")
         results["kb_result"] = checkPolicies(request)
 
-    # BRANCH 3 , Control Allocation Request
-    # The intersection scheduler is asked to assign safe signal phases.
     elif category == "Control_Allocation_Request":
-        results["modules_invoked"].append("cspScheduler")
+        results["modules_invoked"].extend(["knowledgeBase", "cspScheduler"])
+
+        results["kb_result"] = checkPolicies(request)
+
         results["csp_schedule"] = allocateControl()
 
-    # BRANCH 4 , Emergency Response Request
-    # Full emergency pipeline: ANN predicts urgency, KB validates policy,
-    # A* finds the fastest weighted route to the destination.
     elif category == "Emergency_Response_Request":
-        results["modules_invoked"].extend(["annPriority", "knowledgeBase", "searchNavigation"])
+        results["modules_invoked"].extend(["annPriority", "knowledgeBase", "cspScheduler", "searchNavigation"])
 
-        # , ANN urgency prediction
         annLabel, annConf = predictPriority(featureVector)
         results["ann_priority"]   = annLabel
         results["ann_confidence"] = annConf
 
-        # , KB policy validation
         results["kb_result"] = checkPolicies(request)
 
-        # , A* route on weighted graph emergency always needs fastest path
+        results["csp_schedule"] = allocateControl()
+
         algorithm = "ASTAR"
         path, cost = findRoute("ASTAR", weightedGraph, startNode, endNode,
                                heuristicFn=getHeuristic)
@@ -88,9 +81,7 @@ def requestRouter(request):
         results["route_path"]      = path
         results["route_cost"]      = cost
 
-    # BRANCH 5 , Integrated City Service Request
-    # Every module is invoked: ANN, KB, CSP, and navigation.
-    # Used for complex scenarios that affect multiple city systems at once.
+    # Branch 5: Integrated
     elif category == "Integrated_City_Service_Request":
         results["modules_invoked"].extend(
             ["annPriority", "knowledgeBase", "cspScheduler", "searchNavigation"]
@@ -107,7 +98,7 @@ def requestRouter(request):
         # CSP intersection scheduling
         results["csp_schedule"] = allocateControl()
 
-        # UCS navigation balanced option for citywide service management
+        # UCS navigation
         algorithm = "UCS"
         path, cost = findRoute("UCS", weightedGraph, startNode, endNode)
         results["route_algorithm"] = algorithm
@@ -115,7 +106,7 @@ def requestRouter(request):
         results["route_cost"]      = cost
 
     else:
-        # Unknown category , record the error and return gracefully
+        # Handle unknown
         results["error"] = "Unknown request_category: '%s'" % category
 
     return results

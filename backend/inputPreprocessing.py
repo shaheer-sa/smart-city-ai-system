@@ -1,7 +1,5 @@
 def preprocessRequest(requestDict):
-    # Presence Check 
-    # These five fields are the absolute minimum to process any request.
-    # If any are missing, we raise early , garbage in means garbage out.
+    # Validate required fields
     requiredFields = [
         "request_id",
         "vehicle_type",
@@ -14,9 +12,7 @@ def preprocessRequest(requestDict):
         if field not in requestDict:
             raise ValueError("Preprocessing failed: missing required field '%s'" % field)
 
-    # String Normalization 
-    # Strip stray whitespace and unify casing so comparisons
-    # downstream never fail due to "Ambulance" vs "ambulance".
+    # Normalize strings
     normalizedRequest = {}
     normalizedRequest["request_id"]        = str(requestDict["request_id"]).strip()
     normalizedRequest["vehicle_type"]      = str(requestDict["vehicle_type"]).strip().lower()
@@ -24,25 +20,19 @@ def preprocessRequest(requestDict):
     normalizedRequest["current_location"]  = str(requestDict["current_location"]).strip()
     normalizedRequest["destination"]       = str(requestDict["destination"]).strip()
 
-    # Optional Fields with Safe Defaults 
-    # Not every request carries severity or timesensitivity data.
-    # We provide conservative defaults so no module crashes on a missing key.
+    # Apply defaults
     normalizedRequest["severity"]         = str(requestDict.get("severity", "low")).strip().lower()
     normalizedRequest["time_sensitive"]   = bool(requestDict.get("time_sensitive", False))
-    normalizedRequest["passenger_count"]  = int(requestDict.get("passenger_count", 1))
     normalizedRequest["notes"]            = str(requestDict.get("notes", "")).strip()
 
-    # Feature Vector for the ANN 
-    # The ANN cannot read strings , it needs numbers.
-    # We encode each relevant attribute as a float in 0.0, 1.0.
+    # Encode ANN features
     featureVector = prepareFeatureVector(normalizedRequest)
     normalizedRequest["feature_vector"] = featureVector
 
     return normalizedRequest
 
 def prepareFeatureVector(normalizedRequest):
-    # Map vehicle types to an urgency coefficient.
-    # Emergency vehicles score high because their missions are lifecritical.
+    # Vehicle scores
     vehicleTypeMap = {
         "ambulance":  1.00,
         "fire_truck": 0.90,
@@ -50,7 +40,7 @@ def prepareFeatureVector(normalizedRequest):
         "civilian":   0.20
     }
 
-    # Map severity labels to numeric scores.
+    # Severity scores
     severityMap = {
         "critical": 1.00,
         "high":     0.75,
@@ -58,15 +48,21 @@ def prepareFeatureVector(normalizedRequest):
         "low":      0.25
     }
 
-    # Retrieve scores; default to lowest possible if the value is unrecognized.
+    # Map input values
     vehicleScore    = vehicleTypeMap.get(normalizedRequest["vehicle_type"], 0.20)
     severityScore   = severityMap.get(normalizedRequest["severity"], 0.25)
 
-    # Boolean , 1.0 or 0.0
+    # Boolean score
     timeSensitiveScore = 1.0 if normalizedRequest["time_sensitive"] else 0.0
 
-    # Scale passenger count to 0.0, 1.0, capping at 10 people.
-    # A bus full of 10+ people is treated as maximum passenger urgency.
-    passengerScore = min(normalizedRequest["passenger_count"] / 10.0, 1.0)
+    # Category scores
+    categoryMap = {
+        "Emergency_Response_Request": 1.00,
+        "Integrated_City_Service_Request": 0.80,
+        "Control_Allocation_Request": 0.60,
+        "Policy_Check": 0.40,
+        "Route_Request": 0.20
+    }
+    categoryScore = categoryMap.get(normalizedRequest["request_category"], 0.20)
 
-    return [vehicleScore, severityScore, timeSensitiveScore, passengerScore]
+    return [vehicleScore, severityScore, timeSensitiveScore, categoryScore]

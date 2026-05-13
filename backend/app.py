@@ -12,20 +12,21 @@ app = Flask(__name__, template_folder='../frontend/templates', static_folder='..
 
 # GRAPH COORDINATES 
 cityNodes = {
-    "Stadium":                {"label": "Stadium",                "type": "other",        "x": 250, "y": 50},
-    "Airport_Road":           {"label": "Airport Road",           "type": "intersection", "x": 100, "y": 70},
-    "Police_HQ":              {"label": "Police HQ",              "type": "police",       "x": 250, "y": 140},
-    "North_Station":          {"label": "North Station",          "type": "intersection", "x": 400, "y": 140},
-    "River_Bridge":           {"label": "River Bridge",           "type": "intersection", "x": 550, "y": 140},
-    "East_Market":            {"label": "East Market",            "type": "commercial",   "x": 700, "y": 200},
-    "Traffic_Control_Center": {"label": "Traffic Control",        "type": "other",        "x": 250, "y": 280},
-    "Central_Junction":       {"label": "Central Junction",       "type": "intersection", "x": 400, "y": 280},
-    "City_Hospital":          {"label": "City Hospital",          "type": "hospital",     "x": 550, "y": 280},
-    "Fire_Station":           {"label": "Fire Station",           "type": "fire",         "x": 400, "y": 380},
-    "West_Terminal":          {"label": "West Terminal",          "type": "other",        "x": 150, "y": 450},
-    "South_Residential":      {"label": "South Residential",      "type": "other",        "x": 550, "y": 450},
-    "Industrial_Zone":        {"label": "Industrial Zone",        "type": "commercial",   "x": 700, "y": 450}
+    "Traffic_Control_Center": {"label": "Traffic Control",        "type": "other",        "x": 200, "y": 40},
+    "Police_HQ":              {"label": "Police HQ",              "type": "police",       "x": 550, "y": 40},
+    "Airport_Road":           {"label": "Airport Road",           "type": "intersection", "x": 80,  "y": 140},
+    "North_Station":          {"label": "North Station",          "type": "intersection", "x": 350, "y": 140},
+    "River_Bridge":           {"label": "River Bridge",           "type": "intersection", "x": 620, "y": 140},
+    "South_Residential":      {"label": "South Residential",      "type": "other",        "x": 200, "y": 240},
+    "Central_Junction":       {"label": "Central Junction",       "type": "intersection", "x": 400, "y": 240},
+    "West_Terminal":          {"label": "West Terminal",           "type": "other",        "x": 550, "y": 310},
+    "Fire_Station":           {"label": "Fire Station",           "type": "fire",         "x": 710, "y": 310},
+    "Stadium":                {"label": "Stadium",                "type": "other",        "x": 80,  "y": 350},
+    "East_Market":            {"label": "East Market",            "type": "commercial",   "x": 300, "y": 350},
+    "City_Hospital":          {"label": "City Hospital",          "type": "hospital",     "x": 180, "y": 440},
+    "Industrial_Zone":        {"label": "Industrial Zone",        "type": "commercial",   "x": 600, "y": 420}
 }
+
 
 @app.route("/")
 def index():
@@ -59,13 +60,7 @@ def processApi():
     
     vType = data.get("vehicleType", "civilian")
     rCat  = data.get("requestCategory", "Route_Request")
-    sev   = data.get("severity", "5")
-    
-    sVal = int(sev)
-    sLabel = "low"
-    if sVal >= 8: sLabel = "critical"
-    elif sVal >= 6: sLabel = "high"
-    elif sVal >= 4: sLabel = "medium"
+    sLabel = data.get("severity", "low").lower()
 
     rawRequest = {
         "request_id":       "REQ-%d" % int(time.time()),
@@ -74,8 +69,7 @@ def processApi():
         "current_location": data.get("currentLocation"),
         "destination":      data.get("destination"),
         "severity":         sLabel,
-        "time_sensitive":   sVal >= 7,
-        "passenger_count":  3
+        "time_sensitive":   data.get("timeSensitive", False)
     }
 
     try:
@@ -84,10 +78,10 @@ def processApi():
         results = requestRouter(cleanRequest)
         totalTime = (time.perf_counter() - t0) * 1000
 
-        # Safety Ensure kb_result is a dict even if it's None in results
+        # Safely extract kb_result
         kb_data = results.get("kb_result") or {}
 
-        # Build Response Structure
+        # Build response payload
         response = {
             "success": True,
             "decision": {
@@ -127,7 +121,7 @@ def processApi():
             }
         }
         
-        # Action Synthesis
+        # Synthesize final action
         if kb_data.get("signal_override_allowed"): response["decision"]["action"] = "SIGNAL OVERRIDE ACTIVATED. Clear all lanes."
         elif kb_data.get("emergency_route_auth"): response["decision"]["action"] = "Emergency corridor authorized. Expedite transit."
         elif response["decision"]["priority"] in ["High", "Critical"]: response["decision"]["action"] = "High priority transit engaged. Requesting right of way."

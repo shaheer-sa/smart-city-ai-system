@@ -1,24 +1,19 @@
 from collections import deque   # Python's built-in double-ended queue
 
-# Simple Priority Queue using a sorted list
-# We avoid importing heapq to keep things transparent and beginnerfriendly.
+# Simple priority queue
 
 class SimplePriorityQueue:
     def __init__(self):
         self.items = []
 
     def push(self, priority, data):
-        """
-        Add a new item and immediately re-sort so the queue stays ordered.
-        Sorting by priority (first element of each tuple) keeps the minimum
-        cost item at the front.
-        """
+        """Add item and sort"""
         self.items.append((priority, data))
         # Sort ascending by priority value
         self.items.sort(key=lambda pair: pair[0])
 
     def pop(self):
-        """Remove and return the item with the lowest priority value."""
+        """Pop lowest priority"""
         if self.isEmpty():
             raise IndexError("pop from empty priority queue")
         return self.items.pop(0)
@@ -26,7 +21,7 @@ class SimplePriorityQueue:
     def isEmpty(self):
         return len(self.items) == 0
 
-# BFS , BreadthFirst Search Unweighted Graphs
+# BFS: Unweighted graphs
 
 def bfsRoute(graph, startNode, endNode):
     if startNode not in graph:
@@ -40,7 +35,7 @@ def bfsRoute(graph, startNode, endNode):
     if startNode == endNode:
         return [startNode], 0
 
-    # Queue entries: current_node, path_taken_to_reach_it
+    # Queue: node, path
     queue = deque()
     queue.append((startNode, [startNode]))
 
@@ -50,24 +45,24 @@ def bfsRoute(graph, startNode, endNode):
     while len(queue) > 0:
         currentNode, currentPath = queue.popleft()
 
-        # Explore each unvisited neighbor
+        # Explore neighbors
         for neighbor in graph[currentNode]:
             if neighbor in visited:
-                continue  # Already processed — skip to avoid cycles
+                continue  # Skip visited
 
             newPath = currentPath + [neighbor]
 
-            # Destination reached , return immediately BFS guarantees shortest hops
+            # Destination reached
             if neighbor == endNode:
                 return newPath, len(newPath) - 1  # hops = nodes - 1
 
             visited.add(neighbor)
             queue.append((neighbor, newPath))
 
-    # Queue exhausted without finding the destination , no path exists
+    # No path found
     return None, -1
 
-# UCS , Uniform Cost Search Weighted Graphs, Optimal Cost
+# UCS: Weighted graphs
 
 def ucsRoute(graph, startNode, endNode):
     if startNode not in graph:
@@ -82,7 +77,7 @@ def ucsRoute(graph, startNode, endNode):
         return [startNode], 0
 
     pq = SimplePriorityQueue()
-    # cumulative cost, starting node, path so far
+    # Init pq
     pq.push(0, (startNode, [startNode]))
 
     visited = set()
@@ -90,7 +85,7 @@ def ucsRoute(graph, startNode, endNode):
     while not pq.isEmpty():
         cumulativeCost, (currentNode, currentPath) = pq.pop()
 
-        # Skip nodes we've already settled with a cheaper cost
+        # Skip visited
         if currentNode in visited:
             continue
         visited.add(currentNode)
@@ -108,7 +103,7 @@ def ucsRoute(graph, startNode, endNode):
 
     return None, -1
 
-# A* Search Weighted Graphs + Heuristic Guidance
+# A* Search
 
 def aStarRoute(graph, startNode, endNode, heuristicFn):
     if startNode not in graph:
@@ -124,12 +119,12 @@ def aStarRoute(graph, startNode, endNode, heuristicFn):
 
     pq = SimplePriorityQueue()
 
-    # g  actual cost from start; h  heuristic estimate to goal
+    # Calculate costs
     gStart = 0
     hStart = heuristicFn(startNode, endNode)
     fStart = gStart + hStart
 
-    # f_cost, g_cost, current_node, path_so_far
+    # Push initial state
     pq.push(fStart, (gStart, startNode, [startNode]))
 
     visited = set()
@@ -166,7 +161,7 @@ def findRoute(algorithm, graph, startNode, endNode, heuristicFn=None):
 
     elif algorithm == "ASTAR":
         if heuristicFn is None:
-            # Default to zero heuristic , makes A* behave like UCS
+            # Default heuristic
             heuristicFn = lambda node, dest: 0
         return aStarRoute(graph, startNode, endNode, heuristicFn)
 
