@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Traffic Command | Smart City AI System</title>
+    <meta name="description" content="AI-Powered Smart City Traffic & Emergency Response System with Neural Networks, CSP, and Graph Search">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css?v={{ range(1, 1000) | random }}">
+</head>
+<body>
+
+    <canvas id="particle-bg"></canvas>
+
+    <!-- ═══════════════ HEADER ═══════════════ -->
+    <header id="app-header">
+        <div class="header-inner">
+            <div class="cube-scene">
+                <div class="cube">
+                    <div class="face front">&#8855;</div>
+                    <div class="face back">&#10022;</div>
+                    <div class="face right">&#8984;</div>
+                    <div class="face left">&#8998;</div>
+                    <div class="face top">&#9889;</div>
+                    <div class="face bottom">&#9881;</div>
+                </div>
+            </div>
+            <div class="header-text">
+                <h1>SMART CITY AI</h1>
+                <p class="header-sub">Traffic &amp; Emergency Response System</p>
+            </div>
+            <div class="sys-status" id="sys-status">
+                <span class="pulse-dot"></span>
+                <span class="status-text">INITIALIZING</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════ MAIN DASHBOARD ═══════════════ -->
+    <main id="dashboard">
+        <div class="dash-grid">
+
+            <!-- ── COL 1: AI ANALYSIS (LEFT) ── -->
+            <section class="results-panel" id="results-panel">
+                <div class="sec-title">
+                    <span class="sec-icon">&#9880;</span>
+                    <h2>AI ANALYSIS</h2>
+                </div>
+                <div id="results-placeholder" class="placeholder-box">
+                    <div class="placeholder-icon">&#9889;</div>
+                    <p>Engage the system to view AI analysis results</p>
+                </div>
+                <div id="results-grid" class="results-stack" style="display:none;"></div>
+            </section>
+
+            <!-- ── COL 2: CITY MAP (CENTER) ── -->
+            <section class="map-section neo-card" id="map-section">
+                <div class="sec-title">
+                    <span class="sec-icon">&#9737;</span>
+                    <h2>CITY NEURAL MAP</h2>
+                </div>
+                <div class="map-legend">
+                    <span class="leg-item"><i class="ldot ldot-hospital"></i>Hospital</span>
+                    <span class="leg-item"><i class="ldot ldot-fire"></i>Fire Station</span>
+                    <span class="leg-item"><i class="ldot ldot-police"></i>Police</span>
+                    <span class="leg-item"><i class="ldot ldot-junction"></i>Junction</span>
+                    <span class="leg-item"><i class="ldot ldot-commercial"></i>Commercial</span>
+                    <span class="leg-item"><i class="ldot ldot-other"></i>Other</span>
+                </div>
+                <div class="map-wrap">
+                    <canvas id="city-canvas" width="800" height="500"></canvas>
+                </div>
+            </section>
+
+            <!-- ── COL 3: MISSION CONTROL (RIGHT) ── -->
+            <section class="ctrl-panel neo-card" id="ctrl-panel">
+                <div class="sec-title">
+                    <span class="sec-icon">&#9881;</span>
+                    <h2>MISSION CONTROL</h2>
+                </div>
+                <form id="request-form" autocomplete="off">
+                    <div class="ctrl-field">
+                        <label>Vehicle Type</label>
+                        <select id="vehicleType">
+                            <option value="" disabled selected>Select Vehicle</option>
+                            <option value="civilian">Civilian</option>
+                            <option value="ambulance">Ambulance</option>
+                            <option value="fire_truck">Fire Truck</option>
+                            <option value="police_car">Police Car</option>
+                        </select>
+                    </div>
+                    <div class="ctrl-field">
+                        <label>Request Category</label>
+                        <select id="requestCategory">
+                            <option value="" disabled selected>Select Category</option>
+                            <option value="Route_Request">Route Request</option>
+                            <option value="Emergency_Response_Request">Emergency Response</option>
+                            <option value="Policy_Check">Policy Check</option>
+                            <option value="Control_Allocation_Request">Control Allocation</option>
+                            <option value="Integrated_City_Service_Request">Integrated Service</option>
+                        </select>
+                    </div>
+                    <div class="ctrl-row">
+                        <div class="ctrl-field">
+                            <label>Origin</label>
+                            <select id="currentLocation"></select>
+                        </div>
+                        <div class="ctrl-field">
+                            <label>Destination</label>
+                            <select id="destination"></select>
+                        </div>
+                    </div>
+                    <div class="ctrl-slider">
+                        <label>Severity <span class="neon-val" id="severityVal">5</span></label>
+                        <input type="range" id="severity" min="1" max="10" value="5">
+                    </div>
+                    <div class="ctrl-slider">
+                        <label>Traffic Density <span class="neon-val" id="densityVal">0.5</span></label>
+                        <input type="range" id="trafficDensity" min="0" max="10" value="5">
+                    </div>
+                    <button type="submit" id="submit-btn" disabled>
+                        <span class="btn-text">ENGAGE SYSTEM</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                </form>
+            </section>
+        </div>
+
+        <!-- ── MODULE EXECUTION PIPELINE ── -->
+        <section class="pipeline-bar neo-card" id="pipeline-bar">
+            <div class="sec-title sec-title-sm">
+                <h2>MODULE EXECUTION PIPELINE</h2>
+            </div>
+            <div id="module-pipeline" class="pipe-track">
+                <div class="pipe-node" data-module="Preprocessing">
+                    <div class="pipe-dot"></div>
+                    <div class="pipe-label">Preprocessing</div>
+                    <div class="pipe-time">--</div>
+                </div>
+                <div class="pipe-connector"></div>
+                <div class="pipe-node" data-module="annPriority">
+                    <div class="pipe-dot"></div>
+                    <div class="pipe-label">ANN Priority</div>
+                    <div class="pipe-time">--</div>
+                </div>
+                <div class="pipe-connector"></div>
+                <div class="pipe-node" data-module="knowledgeBase">
+                    <div class="pipe-dot"></div>
+                    <div class="pipe-label">Knowledge Base</div>
+                    <div class="pipe-time">--</div>
+                </div>
+                <div class="pipe-connector"></div>
+                <div class="pipe-node" data-module="cspScheduler">
+                    <div class="pipe-dot"></div>
+                    <div class="pipe-label">CSP Scheduler</div>
+                    <div class="pipe-time">--</div>
+                </div>
+                <div class="pipe-connector"></div>
+                <div class="pipe-node" data-module="searchNavigation">
+                    <div class="pipe-dot"></div>
+                    <div class="pipe-label">Navigation</div>
+                    <div class="pipe-time">--</div>
+                </div>
+                <div class="pipe-connector"></div>
+                <div class="pipe-node" data-module="Response">
+                    <div class="pipe-dot"></div>
+                    <div class="pipe-label">Response</div>
+                    <div class="pipe-time">--</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer id="app-footer">
+        <p>Artificial Intelligence Lab &bull; Semester Project</p>
+    </footer>
+
+    <script src="/static/app.js?v={{ range(1, 1000) | random }}"></script>
+</body>
+</html>

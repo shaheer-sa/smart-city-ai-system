@@ -1,0 +1,22 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Database specific (if any local exports)
+*.dmp
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
